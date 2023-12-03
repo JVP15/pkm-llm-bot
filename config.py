@@ -8,10 +8,6 @@ from environs import Env
 
 import constants
 
-env = Env()
-env.read_env(path="env", recurse=False)
-
-
 class CustomFormatter(logging.Formatter):
     def format(self, record):
         record.module = "[{}]".format(record.module)
@@ -66,9 +62,19 @@ class _ShowdownConfig:
     damage_calc_type: str
     log_level: str
     log_to_file: bool
+    model_path: str
+    model_kwargs: str
+    model_turn_limit: int
     log_handler: Union[CustomRotatingFileHandler, logging.StreamHandler]
 
-    def configure(self):
+    def configure(self, path: str = None):
+        env = Env()
+
+        if path is None:
+            path = 'env'
+
+        env.read_env(path=path, recurse=False)
+
         self.battle_bot_module = env("BATTLE_BOT")
         self.websocket_uri = env("WEBSOCKET_URI")
         self.username = env("PS_USERNAME")
@@ -86,6 +92,9 @@ class _ShowdownConfig:
 
         self.log_level = env("LOG_LEVEL", "DEBUG")
         self.log_to_file = env.bool("LOG_TO_FILE", False)
+
+        self.model_path = env("MODEL_PATH", None)
+        self.model_turn_limit = env.int("MODEL_TURN_LIMIT", None)
 
         self.validate_config()
 

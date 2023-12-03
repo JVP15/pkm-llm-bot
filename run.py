@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import logging
@@ -42,8 +43,8 @@ def check_dictionaries_are_unmodified(original_pokedex, original_move_json):
         logger.debug("Pokedex JSON unmodified!")
 
 
-async def showdown():
-    ShowdownConfig.configure()
+async def showdown(env_file: str = None):
+    ShowdownConfig.configure(env_file)
     init_logging(
         ShowdownConfig.log_level,
         ShowdownConfig.log_to_file
@@ -99,8 +100,14 @@ async def showdown():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--env', type=str, default=None, help='Path to the env file for the bot, default is `env`')
+
+    args = parser.parse_args()
+
     try:
-        asyncio.run(showdown())
+        asyncio.run(showdown(args.env))
     except Exception as e:
         logger.error(traceback.format_exc())
         raise

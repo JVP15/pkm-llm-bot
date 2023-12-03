@@ -41,9 +41,12 @@ class PSWebsocketClient:
         await self.send_message('', [message])
         logger.debug("Joined room '{}'".format(room_name))
 
-    async def receive_message(self):
+    async def receive_message(self, battle=None):
         message = await self.websocket.recv()
         logger.debug("Received message from websocket: {}".format(message))
+
+        if battle:
+            battle.msg_lines.extend(message.split('\n'))
         return message
 
     async def send_message(self, room, message_list):

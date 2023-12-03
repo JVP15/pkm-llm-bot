@@ -35,12 +35,13 @@ def format_decision(battle, decision):
         if battle.user.active.can_dynamax and all(p.hp == 0 for p in battle.user.reserve):
             message = "{} {}".format(message, constants.DYNAMAX)
 
-        # only terastallize on last pokemon. Come back to this later because this is bad.
-        elif battle.user.active.can_terastallize and all(p.hp == 0 for p in battle.user.reserve):
-            message = "{} {}".format(message, constants.TERASTALLIZE)
+        # NOTE: only terastallize on last pokemon. Come back to this later because this is bad. NOTE: I removed this because 'decision' should be able to contain tera
+        # elif battle.user.active.can_terastallize and all(p.hp == 0 for p in battle.user.reserve):
+        #     message = "{} {}".format(message, constants.TERASTALLIZE)
 
-        if battle.user.active.get_move(decision).can_z:
-            message = "{} {}".format(message, constants.ZMOVE)
+        # NOTE: this doesn't work when I pass tera in along with the decision, and since I'm only targetting gen9 with this, I'm going to remove it for now.
+        # if battle.user.active.get_move(decision).can_z:
+        #     message = "{} {}".format(message, constants.ZMOVE)
 
     return [message, str(battle.rqid)]
 

@@ -79,6 +79,10 @@ class Battle(ABC):
 
         self.request_json = None
 
+        # NOTE: llm bot takes the entire text from showdown as input, so we store it here
+        self.msg_lines = []
+
+
     def initialize_team_preview(self, user_json, opponent_pokemon, battle_type):
         self.user.from_json(user_json, first_turn=True)
         self.user.reserve.insert(0, self.user.active)
