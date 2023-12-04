@@ -93,6 +93,15 @@ async def initialize_battle_with_tag(ps_websocket_client: PSWebsocketClient, set
             battle.opponent.name = opponent_id
             battle.opponent.account_name = opponent_name
 
+            # NOTE: sometimes, get_battle_tag_and_opponent() doesn't get the opponent's name (and sometimes our name isn't properly set either) so we need to do this
+            # this only really happens when we are doing a battle where showdown was set with --no-security b/c we don't log in (although msgs may or may not contain p1 or p2, so we check elsewhere too)
+            for msg in msgs:
+                if msg.startswith('|player|'):
+                    if msg.startswith('|player|' + opponent_id):
+                        battle.opponent.account_name = msg.split('|')[3]
+                    elif msg.startswith('|player|' + user_id):
+                        battle.user.account_name = msg.split('|')[3]
+
             battle.msg_lines.extend(msgs)
 
             if set_request_json:
@@ -106,6 +115,17 @@ async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle,
     # this is run when starting non team-preview battles
     while True:
         msg = await ps_websocket_client.receive_message(battle)
+
+        # NOTE: sometimes names don't get set properly when using --no-security to launch showdown, so we parse and set them here (although msgs may or may not contain p1 or p2)
+        if '|player|' in msg:
+            split_msg = msg.split('\n')
+
+            for line in split_msg:
+                if line.startswith('|player|' + opponent_id):
+                    battle.opponent.account_name = line.split('|')[3]
+                elif line.startswith('|player|'):
+                    battle.user.account_name = line.split('|')[3]
+
         if constants.START_STRING in msg:
             split_msg = msg.split(constants.START_STRING)[-1].split('\n')
             for line in split_msg:
@@ -179,7 +199,7 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
         battle = await start_standard_battle(ps_websocket_client, pokemon_battle_type)
 
     await ps_websocket_client.send_message(battle.battle_tag, ["hf"])
-    #await ps_websocket_client.send_message(battle.battle_tag, ['/timer on']) # NOTE: don't want to turn timer on while debugging
+    await ps_websocket_client.send_message(battle.battle_tag, ['/timer on']) # NOTE: don't want to turn timer on while debugging
 
     return battle
 
@@ -197,7 +217,11 @@ async def pokemon_battle(ps_websocket_client, pokemon_battle_type):
             logger.debug("Winner: {}".format(winner))
             await ps_websocket_client.send_message(battle.battle_tag, ["gg"])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=ShowdownConfig.save_replay)
-            return winner
+
+            score = 0
+            if winner == battle.user.account_name:
+                score = 1
+            return winner, score
         else:
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:

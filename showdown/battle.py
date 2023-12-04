@@ -291,6 +291,7 @@ class Battler:
 
         self.last_used_move = LastUsedMove('', '', 0)
 
+
     def mega_revealed(self):
         return self.active.is_mega or any(p.is_mega for p in self.reserve)
 

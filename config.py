@@ -86,6 +86,9 @@ class _ShowdownConfig:
         self.team = env("TEAM_NAME", None)
         self.user_to_challenge = env("USER_TO_CHALLENGE", None)
 
+        self.user_elo = env.int("USER_ELO", None)
+        self.opponent_elo = env.int("OPPONENT_ELO", None)
+
         self.save_replay = env.bool("SAVE_REPLAY", False)
         self.room_name = env("ROOM_NAME", None)
         self.damage_calc_type = env("DAMAGE_CALC_TYPE", "average")
