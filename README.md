@@ -5,6 +5,18 @@ The bot can play single battles in generations 3 through 8.
 
 ![badge](https://github.com/pmariglia/showdown/actions/workflows/pythonapp.yml/badge.svg)
 
+## What I've Added
+
+I'm working on using an LLM as a battle bot. I don't have the code to train the LLM posted yet, but I will (eventually).
+After my initial tries w/ fine-tuning GPT-2 on pokemon showdown data though, I think I'll have to re-evaluate how to make
+this work because it's performance was pretty *bad*. 
+
+Anyways, I added an env called `llm_env` and I run the code by doing
+
+```python
+python run.py --env_file llm_env
+```
+
 ## Python version
 Developed and tested using Python 3.8.
 

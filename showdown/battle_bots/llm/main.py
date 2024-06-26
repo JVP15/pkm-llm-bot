@@ -94,7 +94,7 @@ class BattleBot(Battle):
         if not self.force_switch:
             tera = self.request_json['active'][0].get(constants.CAN_TERASTALLIZE, '') # may not have CAN_TERA even in a move
 
-        choice = choose_best_action(self.model, self.tokenizer, replay, moves_unnormalized, tera, switchable_pokemon_unnormalized)
+        choice = choose_best_action(self.model, self.tokenizer, replay, moves_unnormalized, tera, switchable_pokemon_unnormalized, algorithm='sample_forward')
 
         return format_decision(self, choice)
 
@@ -120,6 +120,8 @@ def choose_best_action(model, tokenizer, replay, moves, tera, switches, algorith
 
     if algorithm == 'best_forward':
         return best_forward(model, tokenizer, replay, moves, tera, switches)
+    elif algorithm == 'sample_forward':
+        return sample_forward(model, tokenizer, replay, moves, tera, switches)
     else:
         raise ValueError("Invalid algorithm: {}".format(algorithm))
 
@@ -137,7 +139,10 @@ def best_forward(model, tokenizer, replay, moves, tera, switches):
 def sample_forward(model, tokenizer, replay, moves, tera, switches):
     sequence_probs, sequence_logits = forward_probs(model, tokenizer, replay, moves, tera, switches)
 
-    best_action_idx = torch.multinomial(torch.stack(sequence_probs), num_samples=1).item()
+    # turn the logits into probabilities
+    sequence_probs = torch.softmax(torch.stack(sequence_logits), dim=0)
+
+    best_action_idx = torch.multinomial(sequence_probs, num_samples=1).item()
 
     actions = format_move_strings(moves, tera) + format_switch_strings(switches)
 
